@@ -1,0 +1,42 @@
+{
+  "name": "@collabboard/server",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "clean": "rm -rf dist",
+    "lint": "eslint src/**/*.ts",
+    "test": "vitest",
+    "db:migrate": "tsx src/db/migrate.ts",
+    "db:seed": "tsx src/db/seed.ts"
+  },
+  "dependencies": {
+    "@collabboard/shared": "*",
+    "fastify": "^4.26.2",
+    "@fastify/cors": "^9.0.1",
+    "@fastify/rate-limit": "^9.1.0",
+    "socket.io": "^4.7.5",
+    "socket.io-redis": "^6.1.1",
+    "pg": "^8.11.5",
+    "redis": "^4.6.13",
+    "bcrypt": "^5.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "zod": "^3.22.4",
+    "pino": "^8.20.0",
+    "pino-pretty": "^11.0.0",
+    "prom-client": "^15.1.2",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "@types/bcrypt": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/pg": "^8.11.4",
+    "typescript": "^5.4.5",
+    "tsx": "^4.7.2",
+    "vitest": "^1.4.0",
+    "eslint": "^8.57.0"
+  }
+}
