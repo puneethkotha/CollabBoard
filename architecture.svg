@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <style>
+      .component { fill: #ffffff; stroke: #2563eb; stroke-width: 2; }
+      .client { fill: #dbeafe; stroke: #1e40af; stroke-width: 2; }
+      .server { fill: #fef3c7; stroke: #d97706; stroke-width: 2; }
+      .database { fill: #dcfce7; stroke: #16a34a; stroke-width: 2; }
+      .text { font-family: 'Arial', sans-serif; font-size: 14px; fill: #1f2937; }
+      .title { font-family: 'Arial', sans-serif; font-size: 16px; font-weight: bold; fill: #111827; }
+      .arrow { stroke: #6b7280; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .label { font-family: 'Arial', sans-serif; font-size: 11px; fill: #4b5563; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#6b7280" />
+    </marker>
+  </defs>
+  
+  <!-- Title -->
+  <text x="400" y="30" class="title" text-anchor="middle">CollabBoard Architecture</text>
+  
+  <!-- Client Layer -->
+  <rect x="50" y="80" width="180" height="120" class="client" rx="5"/>
+  <text x="140" y="105" class="title" text-anchor="middle">Client (Browser)</text>
+  <text x="140" y="130" class="text" text-anchor="middle">Next.js 14</text>
+  <text x="140" y="150" class="text" text-anchor="middle">React Components</text>
+  <text x="140" y="170" class="text" text-anchor="middle">Socket.IO Client</text>
+  <text x="140" y="190" class="text" text-anchor="middle">Tailwind CSS</text>
+  
+  <!-- Shared Package -->
+  <rect x="310" y="100" width="180" height="80" class="component" rx="5"/>
+  <text x="400" y="125" class="title" text-anchor="middle">Shared Package</text>
+  <text x="400" y="145" class="text" text-anchor="middle">TypeScript Types</text>
+  <text x="400" y="165" class="text" text-anchor="middle">Validation Schemas</text>
+  
+  <!-- Server Layer -->
+  <rect x="570" y="80" width="180" height="120" class="server" rx="5"/>
+  <text x="660" y="105" class="title" text-anchor="middle">Backend Server</text>
+  <text x="660" y="130" class="text" text-anchor="middle">Express.js</text>
+  <text x="660" y="150" class="text" text-anchor="middle">Socket.IO Server</text>
+  <text x="660" y="170" class="text" text-anchor="middle">REST API</text>
+  <text x="660" y="190" class="text" text-anchor="middle">JWT Auth</text>
+  
+  <!-- PostgreSQL -->
+  <rect x="520" y="280" width="140" height="80" class="database" rx="5"/>
+  <text x="590" y="305" class="title" text-anchor="middle">PostgreSQL</text>
+  <text x="590" y="330" class="text" text-anchor="middle">Workspaces</text>
+  <text x="590" y="350" class="text" text-anchor="middle">Boards & Cards</text>
+  
+  <!-- Redis -->
+  <rect x="680" y="280" width="120" height="80" class="database" rx="5"/>
+  <text x="740" y="305" class="title" text-anchor="middle">Redis</text>
+  <text x="740" y="330" class="text" text-anchor="middle">Sessions</text>
+  <text x="740" y="350" class="text" text-anchor="middle">Presence</text>
+  
+  <!-- Connections -->
+  <!-- Client to Shared -->
+  <path d="M 230 140 L 310 140" class="arrow"/>
+  <text x="270" y="135" class="label" text-anchor="middle">imports</text>
+  
+  <!-- Shared to Server -->
+  <path d="M 490 140 L 570 140" class="arrow"/>
+  <text x="530" y="135" class="label" text-anchor="middle">imports</text>
+  
+  <!-- Client to Server - HTTP -->
+  <path d="M 140 200 L 140 230 L 660 230 L 660 200" class="arrow"/>
+  <text x="380" y="225" class="label" text-anchor="middle">HTTP/REST (JWT Auth)</text>
+  
+  <!-- Client to Server - WebSocket -->
+  <path d="M 170 200 L 170 250 L 630 250 L 630 200" class="arrow"/>
+  <path d="M 630 250 L 630 200" class="arrow"/>
+  <path d="M 170 250 L 170 200" class="arrow"/>
+  <text x="380" y="270" class="label" text-anchor="middle">WebSocket (Socket.IO) - Real-time Updates</text>
+  
+  <!-- Server to PostgreSQL -->
+  <path d="M 630 200 L 590 280" class="arrow"/>
+  <text x="600" y="250" class="label" text-anchor="start">Read/Write</text>
+  
+  <!-- Server to Redis -->
+  <path d="M 690 200 L 730 280" class="arrow"/>
+  <text x="700" y="250" class="label" text-anchor="start">Cache</text>
+  
+  <!-- Legend -->
+  <rect x="50" y="420" width="700" height="150" fill="#f9fafb" stroke="#d1d5db" stroke-width="1" rx="5"/>
+  <text x="70" y="445" class="title">Data Flow</text>
+  
+  <text x="70" y="470" class="text">1. User authenticates via REST API (JWT tokens)</text>
+  <text x="70" y="490" class="text">2. Client establishes WebSocket connection for real-time updates</text>
+  <text x="70" y="510" class="text">3. User actions trigger optimistic UI updates locally</text>
+  <text x="70" y="530" class="text">4. Server validates, persists to PostgreSQL, and broadcasts changes</text>
+  <text x="70" y="550" class="text">5. Redis tracks active users and caches session data</text>
+</svg>

@@ -14,6 +14,8 @@ A real-time collaborative whiteboard application built with WebSocket technology
 
 ## Architecture
 
+![Architecture Diagram](./architecture.svg)
+
 This is a monorepo using Turborepo with the following structure:
 
 - **Frontend** - Next.js 14 with App Router, React, Tailwind CSS
