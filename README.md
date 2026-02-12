@@ -1,71 +1,97 @@
 # CollabBoard
 
-A production-grade real-time collaborative board application with drag-and-drop cards, live chat, and multi-user presence.
+A real-time collaborative whiteboard application built with WebSocket technology. Users can create boards, manage cards across columns, and see live updates from other collaborators.
 
 ## Features
 
-- 🎯 **Real-time Collaboration**: Multiple users can edit boards simultaneously
-- 🚀 **Optimistic UI**: Instant feedback with delta-based updates
-- 🔐 **Secure Authentication**: JWT-based auth with refresh tokens
-- 👥 **User Presence**: See who's viewing each board in real-time
-- 💬 **Board Chat**: Communicate with team members per board
-- 🎨 **Drag & Drop**: Intuitive card management with column organization
-- 📊 **Production Ready**: Rate limiting, observability, RBAC, CI/CD
+- **Real-time Synchronization** - WebSocket-based updates with Socket.IO
+- **Optimistic Updates** - Local changes apply immediately, then sync with server
+- **User Authentication** - JWT tokens with refresh token rotation
+- **Active User Tracking** - Display which users are currently viewing each board
+- **Board-level Chat** - Text communication within individual boards
+- **Card Management** - Drag-and-drop interface for organizing cards across columns
+- **Access Control** - Role-based permissions for workspaces and boards
 
-## Tech Stack
+## Architecture
 
-- **Frontend**: Next.js 14 (App Router), React, Tailwind CSS, Socket.IO Client
-- **Backend**: Node.js, Fastify, Socket.IO Server
-- **Database**: PostgreSQL with optimistic concurrency control
-- **Cache & Presence**: Redis
-- **Auth**: JWT + Refresh Token rotation
-- **Observability**: Structured logging (Pino), Prometheus metrics
-- **Infrastructure**: Docker Compose for local development
-- **CI/CD**: GitHub Actions
+This is a monorepo using Turborepo with the following structure:
 
-## Quick Start
+- **Frontend** - Next.js 14 with App Router, React, Tailwind CSS
+- **Backend** - Express server with Socket.IO for WebSocket connections
+- **Database** - PostgreSQL for persistent storage
+- **Cache** - Redis for user presence and session management
+- **Shared Package** - TypeScript types and validation schemas used by both frontend and backend
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- Docker and Docker Compose
+
+### Installation
 
 ```bash
 # Install dependencies
 npm install
 
-# Start infrastructure (Postgres + Redis)
+# Start PostgreSQL and Redis containers
 npm run docker:up
 
-# Run migrations
+# Run database migrations
 npm run db:migrate
 
-# Seed demo data
+# Optional: seed demo data
 npm run db:seed
 
-# Start development servers
+# Start both frontend and backend servers
 npm run dev
 ```
 
-Visit:
+The application will be available at:
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:4000
-- Health: http://localhost:4000/health
-- Metrics: http://localhost:4000/metrics
-
-## Documentation
-
-- [Local Development Guide](./docs/LOCAL_DEV.md)
-- [Architecture Overview](./docs/ARCHITECTURE.md)
-- [Operations Runbook](./docs/RUNBOOK.md)
+- Health check: http://localhost:4000/health
 
 ## Project Structure
 
 ```
+CollabBoard/
 ├── apps/
-│   ├── web/           # Next.js frontend
-│   └── server/        # Fastify + Socket.IO backend
+│   ├── web/              Next.js frontend application
+│   └── server/           Express backend with Socket.IO
 ├── packages/
-│   └── shared/        # Shared types, schemas, contracts
-├── docker/            # Docker Compose and init scripts
-├── docs/              # Documentation
-└── .github/workflows/ # CI/CD pipelines
+│   └── shared/           Shared TypeScript types and schemas
+├── docker/
+│   ├── docker-compose.yml
+│   └── init.sql          Database initialization
+└── turbo.json            Turborepo configuration
 ```
+
+## Development
+
+The monorepo is managed with Turborepo. Key commands:
+
+```bash
+npm run dev          # Start all apps in development mode
+npm run build        # Build all apps
+npm run lint         # Lint all packages
+npm run docker:up    # Start Docker services
+npm run docker:down  # Stop Docker services
+```
+
+## Environment Variables
+
+Backend (`apps/server/.env`):
+
+```
+DATABASE_URL=postgresql://user:password@localhost:5432/collabboard
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=your-secret-key
+PORT=4000
+```
+
+Frontend environment variables can be configured in `apps/web/.env.local`.
 
 ## License
 
