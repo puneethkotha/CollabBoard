@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CollabBoard — Real-Time Collaboration Platform</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a0f;--surface:#12121a;--surface2:#1a1a26;--border:#ffffff12;--accent:#6366f1;--accent2:#8b5cf6;--accent3:#06b6d4;--text:#f0f0f8;--muted:#8888aa;--green:#10b981;--yellow:#f59e0b}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,-apple-system,sans-serif;line-height:1.6;overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+
+/* Nav */
+nav{position:fixed;top:0;width:100%;z-index:100;padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;background:rgba(10,10,15,0.8);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.nav-logo{font-size:1.2rem;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-links{display:flex;gap:2rem;align-items:center}
+.nav-links a{color:var(--muted);font-size:0.9rem;transition:color .2s}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{background:var(--accent);color:#fff !important;padding:.5rem 1.2rem;border-radius:8px;font-size:0.85rem !important;font-weight:600;transition:opacity .2s !important}
+.nav-cta:hover{opacity:.85}
+
+/* Hero */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:6rem 2rem 4rem;position:relative;overflow:hidden}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(99,102,241,0.06) 1px,transparent 1px),linear-gradient(90deg,rgba(99,102,241,0.06) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 80% 60% at 50% 50%,#000 40%,transparent 100%)}
+.hero-glow{position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(99,102,241,0.15) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+.badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.3);padding:.4rem 1rem;border-radius:100px;font-size:0.8rem;color:var(--accent);margin-bottom:1.5rem;position:relative;z-index:1}
+.badge-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+.hero h1{font-size:clamp(2.5rem,6vw,5rem);font-weight:800;line-height:1.1;letter-spacing:-0.03em;position:relative;z-index:1;max-width:900px}
+.hero h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2),var(--accent3));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:1.15rem;color:var(--muted);max-width:600px;margin:1.5rem auto;position:relative;z-index:1}
+.hero-btns{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;margin-top:2rem;position:relative;z-index:1}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:.8rem 1.8rem;border-radius:10px;font-weight:600;font-size:0.95rem;transition:transform .2s,box-shadow .2s;box-shadow:0 0 30px rgba(99,102,241,0.3)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 40px rgba(99,102,241,0.5)}
+.btn-secondary{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:.8rem 1.8rem;border-radius:10px;font-weight:500;font-size:0.95rem;transition:border-color .2s,background .2s}
+.btn-secondary:hover{border-color:rgba(99,102,241,0.4);background:rgba(99,102,241,0.05)}
+
+/* Live Preview */
+.live-preview{position:relative;z-index:1;margin-top:4rem;width:100%;max-width:900px;border-radius:16px;overflow:hidden;border:1px solid var(--border);box-shadow:0 40px 120px rgba(0,0,0,0.6)}
+.preview-bar{background:var(--surface);padding:.8rem 1rem;display:flex;align-items:center;gap:.5rem;border-bottom:1px solid var(--border)}
+.dot{width:12px;height:12px;border-radius:50%}
+.dot-r{background:#ff5f57}.dot-y{background:#febc2e}.dot-g{background:#28c840}
+.preview-url{margin-left:.5rem;background:var(--surface2);border-radius:6px;padding:.2rem .8rem;font-size:0.75rem;color:var(--muted);flex:1;max-width:300px;border:1px solid var(--border)}
+.preview-body{background:var(--surface2);display:grid;grid-template-columns:240px 1fr;min-height:320px}
+.preview-sidebar{border-right:1px solid var(--border);padding:1rem;display:flex;flex-direction:column;gap:.5rem}
+.preview-sidebar-header{font-size:0.7rem;font-weight:700;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;padding:.5rem 0;border-bottom:1px solid var(--border);margin-bottom:.5rem}
+.board-item{padding:.5rem .75rem;border-radius:6px;font-size:0.8rem;cursor:pointer;transition:background .2s;display:flex;align-items:center;gap:.5rem}
+.board-item:hover,.board-item.active{background:rgba(99,102,241,0.1);color:var(--accent)}
+.board-item-dot{width:8px;height:8px;border-radius:2px}
+.preview-main{padding:1rem;display:flex;gap:.75rem;overflow:hidden}
+.kanban-col{flex:1;background:var(--surface);border-radius:8px;padding:.75rem;min-width:0;border:1px solid var(--border)}
+.kanban-col-title{font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.75rem;display:flex;align-items:center;justify-content:space-between}
+.kanban-count{background:var(--surface2);padding:.1rem .4rem;border-radius:4px;font-size:0.65rem}
+.card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:.6rem;margin-bottom:.5rem;font-size:0.75rem;cursor:grab;transition:border-color .2s,transform .2s}
+.card:hover{border-color:rgba(99,102,241,0.3);transform:translateY(-1px)}
+.card-tag{display:inline-block;background:rgba(99,102,241,0.15);color:var(--accent);padding:.1rem .4rem;border-radius:4px;font-size:0.65rem;margin-bottom:.3rem}
+.card-tag.green{background:rgba(16,185,129,0.15);color:var(--green)}
+.card-tag.yellow{background:rgba(245,158,11,0.15);color:var(--yellow)}
+.user-avatars{display:flex;position:absolute;bottom:1rem;right:1rem}
+.avatar{width:28px;height:28px;border-radius:50%;border:2px solid var(--surface2);margin-left:-8px;font-size:0.65rem;display:flex;align-items:center;justify-content:center;font-weight:700}
+.avatar-1{background:linear-gradient(135deg,#6366f1,#8b5cf6)}
+.avatar-2{background:linear-gradient(135deg,#06b6d4,#3b82f6)}
+.avatar-3{background:linear-gradient(135deg,#10b981,#059669)}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);margin-top:4rem;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.stat{background:var(--bg);padding:2.5rem;text-align:center}
+.stat-num{font-size:2.5rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent3));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-label{color:var(--muted);font-size:0.85rem;margin-top:.25rem}
+
+/* Features */
+.section{padding:6rem 2rem;max-width:1100px;margin:0 auto}
+.section-label{font-size:0.8rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem}
+.section-title{font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:800;letter-spacing:-0.02em;max-width:600px;line-height:1.15}
+.section-sub{color:var(--muted);margin-top:1rem;max-width:500px;font-size:1.05rem}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;margin-top:3rem}
+.feature-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.75rem;transition:border-color .3s,transform .3s}
+.feature-card:hover{border-color:rgba(99,102,241,0.3);transform:translateY(-3px)}
+.feature-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin-bottom:1rem}
+.feature-card h3{font-size:1.05rem;font-weight:700;margin-bottom:.5rem}
+.feature-card p{color:var(--muted);font-size:0.9rem;line-height:1.65}
+
+/* Stack */
+.stack-section{padding:6rem 2rem;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.stack-inner{max-width:1100px;margin:0 auto}
+.stack-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-top:3rem}
+.stack-item{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:1.25rem;display:flex;align-items:center;gap:.75rem;transition:border-color .3s}
+.stack-item:hover{border-color:rgba(99,102,241,0.3)}
+.stack-logo{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:800;flex-shrink:0}
+.stack-name{font-weight:700;font-size:0.9rem}
+.stack-role{color:var(--muted);font-size:0.75rem}
+
+/* Architecture */
+.arch-section{padding:6rem 2rem;max-width:1100px;margin:0 auto}
+.arch-diagram{margin-top:3rem;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2.5rem;display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:1rem;align-items:center}
+.arch-box{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1.25rem;text-align:center}
+.arch-box-icon{font-size:1.8rem;margin-bottom:.5rem}
+.arch-box-name{font-weight:700;font-size:0.9rem}
+.arch-box-desc{color:var(--muted);font-size:0.75rem;margin-top:.25rem}
+.arch-arrow{color:var(--accent);font-size:1.5rem;text-align:center;opacity:.6}
+.arch-badge{display:inline-block;font-size:0.65rem;padding:.1rem .4rem;border-radius:4px;margin-top:.3rem;font-weight:600}
+.ab-ws{background:rgba(99,102,241,0.15);color:var(--accent)}
+.ab-db{background:rgba(16,185,129,0.15);color:var(--green)}
+.ab-cache{background:rgba(245,158,11,0.15);color:var(--yellow)}
+
+/* Code block */
+.code-section{padding:6rem 2rem;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.code-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center}
+.code-block{background:var(--bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;font-family:'Fira Code',monospace}
+.code-header{padding:.75rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.5rem;background:var(--surface2)}
+.code-dots{display:flex;gap:.35rem}
+.code-title{font-size:0.75rem;color:var(--muted);margin-left:.5rem}
+.code-body{padding:1.5rem;font-size:0.8rem;line-height:1.8;overflow-x:auto}
+.kw{color:#8b5cf6}
+.fn{color:#06b6d4}
+.str{color:#10b981}
+.cm{color:#555577}
+.vr{color:#f0f0f8}
+
+/* CTA */
+.cta-section{padding:8rem 2rem;text-align:center;position:relative;overflow:hidden}
+.cta-glow{position:absolute;width:500px;height:300px;background:radial-gradient(ellipse,rgba(99,102,241,0.2) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)}
+.cta-section h2{font-size:clamp(2rem,4vw,3.5rem);font-weight:800;letter-spacing:-0.02em;position:relative}
+.cta-section p{color:var(--muted);margin-top:1rem;font-size:1.1rem;position:relative}
+.cta-btns{margin-top:2.5rem;display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;position:relative}
+
+/* Footer */
+footer{border-top:1px solid var(--border);padding:2rem;text-align:center;color:var(--muted);font-size:0.85rem;display:flex;flex-direction:column;gap:.5rem;align-items:center}
+.footer-links{display:flex;gap:1.5rem}
+.footer-links a{color:var(--muted);transition:color .2s}
+.footer-links a:hover{color:var(--text)}
+
+/* Animated connection line */
+@keyframes dash{to{stroke-dashoffset:-20}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{opacity:0;animation:fadeUp .6s ease forwards}
+.delay-1{animation-delay:.1s}.delay-2{animation-delay:.2s}.delay-3{animation-delay:.3s}.delay-4{animation-delay:.4s}
+
+/* Responsive */
+@media(max-width:768px){
+.nav-links{display:none}
+.stats{grid-template-columns:1fr}
+.code-inner{grid-template-columns:1fr}
+.arch-diagram{grid-template-columns:1fr;grid-template-rows:auto}
+.arch-arrow{transform:rotate(90deg)}
+.preview-body{grid-template-columns:1fr}
+.preview-sidebar{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-logo">⬡ CollabBoard</div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#stack">Stack</a>
+    <a href="#architecture">Architecture</a>
+    <a href="https://github.com/puneethkotha/CollabBoard" target="_blank" class="nav-cta">View on GitHub →</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="badge fade-up"><span class="badge-dot"></span> Real-time WebSocket sync · Open Source</div>
+  <h1 class="fade-up delay-1">Collaborate without<br/><span>boundaries.</span></h1>
+  <p class="hero-sub fade-up delay-2">A production-grade real-time collaborative whiteboard. Built on WebSockets, Socket.IO, Next.js 14, and Postgres — with live cursors, Kanban boards, and end-to-end presence tracking.</p>
+  <div class="hero-btns fade-up delay-3">
+    <a href="https://github.com/puneethkotha/CollabBoard" class="btn-primary" target="_blank">Get Started →</a>
+    <a href="#features" class="btn-secondary">See Features</a>
+  </div>
+
+  <!-- Live mock preview -->
+  <div class="live-preview fade-up delay-4">
+    <div class="preview-bar">
+      <div class="dot dot-r"></div>
+      <div class="dot dot-y"></div>
+      <div class="dot dot-g"></div>
+      <div class="preview-url">localhost:3000/board/sprint-42</div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:.5rem;font-size:0.7rem;color:var(--green)">● 3 online</div>
+    </div>
+    <div class="preview-body" style="position:relative">
+      <div class="preview-sidebar">
+        <div class="preview-sidebar-header">Workspaces</div>
+        <div class="board-item active"><div class="board-item-dot" style="background:#6366f1"></div>Sprint 42</div>
+        <div class="board-item"><div class="board-item-dot" style="background:#10b981"></div>Design System</div>
+        <div class="board-item"><div class="board-item-dot" style="background:#f59e0b"></div>API v2</div>
+        <div class="board-item"><div class="board-item-dot" style="background:#06b6d4"></div>Onboarding</div>
+        <div style="margin-top:auto;padding-top:1rem;border-top:1px solid var(--border)">
+          <div class="preview-sidebar-header">Chat</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:.5rem">pk: moved auth card ✓</div>
+          <div style="font-size:0.72rem;color:var(--muted)">alex: LGTM 👍</div>
+        </div>
+      </div>
+      <div class="preview-main">
+        <div class="kanban-col">
+          <div class="kanban-col-title">Backlog <span class="kanban-count">4</span></div>
+          <div class="card"><div class="card-tag">feature</div><div>User onboarding flow</div></div>
+          <div class="card"><div class="card-tag yellow">bug</div><div>Fix token expiry edge case</div></div>
+        </div>
+        <div class="kanban-col">
+          <div class="kanban-col-title">In Progress <span class="kanban-count">2</span></div>
+          <div class="card" style="border-color:rgba(99,102,241,0.4)"><div class="card-tag">feature</div><div>WebSocket reconnect logic</div></div>
+        </div>
+        <div class="kanban-col">
+          <div class="kanban-col-title">Done <span class="kanban-count">7</span></div>
+          <div class="card"><div class="card-tag green">done</div><div>JWT refresh rotation</div></div>
+          <div class="card"><div class="card-tag green">done</div><div>Redis presence tracking</div></div>
+        </div>
+      </div>
+      <div class="user-avatars">
+        <div class="avatar avatar-1">PK</div>
+        <div class="avatar avatar-2">AL</div>
+        <div class="avatar avatar-3">MR</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<div class="stats">
+  <div class="stat"><div class="stat-num">&lt;50ms</div><div class="stat-label">WebSocket latency</div></div>
+  <div class="stat"><div class="stat-num">∞</div><div class="stat-label">Concurrent boards</div></div>
+  <div class="stat"><div class="stat-num">100%</div><div class="stat-label">TypeScript coverage</div></div>
+</div>
+
+<!-- Features -->
+<section class="section" id="features">
+  <div class="section-label">Core Features</div>
+  <h2 class="section-title">Everything you need to build together, fast.</h2>
+  <p class="section-sub">Production-grade infrastructure with developer-first ergonomics.</p>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(99,102,241,0.1)">⚡</div>
+      <h3>Real-Time Sync</h3>
+      <p>Socket.IO-powered WebSocket connections with optimistic updates. Changes propagate across all clients in under 50ms with automatic conflict resolution.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(6,182,212,0.1)">👥</div>
+      <h3>Live Presence</h3>
+      <p>See who's viewing each board in real-time. Redis-backed user presence tracking with avatar display and active cursor positions.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(139,92,246,0.1)">🔐</div>
+      <h3>Auth & Access Control</h3>
+      <p>JWT tokens with refresh token rotation. Role-based permissions at the workspace and board level — owner, editor, and viewer roles.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(16,185,129,0.1)">📋</div>
+      <h3>Kanban Boards</h3>
+      <p>Drag-and-drop card management across unlimited columns. Full CRUD for boards, columns, and cards with instant sync to all collaborators.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(245,158,11,0.1)">💬</div>
+      <h3>Board-Level Chat</h3>
+      <p>Scoped real-time text chat within each board. Keeps communication contextual and eliminates context-switching to external tools.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(99,102,241,0.1)">🏗️</div>
+      <h3>Turborepo Monorepo</h3>
+      <p>Web and server apps share TypeScript types and Zod schemas through a shared package. Parallel builds, incremental caching, zero drift.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Stack -->
+<div class="stack-section" id="stack">
+  <div class="stack-inner">
+    <div class="section-label">Tech Stack</div>
+    <h2 class="section-title">Built on the modern production stack.</h2>
+    <div class="stack-grid">
+      <div class="stack-item"><div class="stack-logo" style="background:rgba(0,0,0,0.8);color:#fff">N</div><div><div class="stack-name">Next.js 14</div><div class="stack-role">Frontend · App Router</div></div></div>
+      <div class="stack-item"><div class="stack-logo" style="background:#3178c6;color:#fff">TS</div><div><div class="stack-name">TypeScript</div><div class="stack-role">End-to-end types</div></div></div>
+      <div class="stack-item"><div class="stack-logo" style="background:rgba(99,102,241,0.15);color:#6366f1;font-size:.8rem">IO</div><div><div class="stack-name">Socket.IO</div><div class="stack-role">WebSocket layer</div></div></div>
+      <div class="stack-item"><div class="stack-logo" style="background:#000;color:#fff">Ex</div><div><div class="stack-name">Express</div><div class="stack-role">REST + WS Backend</div></div></div>
+      <div class="stack-item"><div class="stack-logo" style="background:#336791;color:#fff;font-size:.7rem">PG</div><div><div class="stack-name">PostgreSQL</div><div class="stack-role">Persistent storage</div></div></div>
+      <div class="stack-item"><div class="stack-logo" style="background:#dc382d;color:#fff;font-size:.85rem">R</div><div><div class="stack-name">Redis</div><div class="stack-role">Presence & sessions</div></div></div>
+      <div class="stack-item"><div class="stack-logo" style="background:#38bdf8;color:#000;font-size:.7rem">TW</div><div><div class="stack-name">Tailwind CSS</div><div class="stack-role">Styling</div></div></div>
+      <div class="stack-item"><div class="stack-logo" style="background:rgba(99,102,241,0.15);color:#6366f1;font-size:.7rem">TB</div><div><div class="stack-name">Turborepo</div><div class="stack-role">Monorepo build</div></div></div>
+      <div class="stack-item"><div class="stack-logo" style="background:#2496ed;color:#fff;font-size:.75rem">🐳</div><div><div class="stack-name">Docker</div><div class="stack-role">Local dev infra</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Architecture -->
+<section class="arch-section" id="architecture">
+  <div class="section-label">Architecture</div>
+  <h2 class="section-title">Designed for scale from day one.</h2>
+  <p class="section-sub">Event-driven, horizontally scalable — every component is independently deployable.</p>
+  <div class="arch-diagram">
+    <div class="arch-box">
+      <div class="arch-box-icon">🖥️</div>
+      <div class="arch-box-name">Next.js 14</div>
+      <div class="arch-box-desc">App Router · React · Tailwind</div>
+      <div class="arch-badge ab-ws">Port 3000</div>
+    </div>
+    <div class="arch-arrow">⇄</div>
+    <div class="arch-box">
+      <div class="arch-box-icon">⚙️</div>
+      <div class="arch-box-name">Express + Socket.IO</div>
+      <div class="arch-box-desc">REST API · WebSocket · JWT Auth</div>
+      <div class="arch-badge ab-ws">Port 4000</div>
+    </div>
+    <div class="arch-arrow">⇄</div>
+    <div>
+      <div class="arch-box" style="margin-bottom:1rem">
+        <div class="arch-box-icon">🗄️</div>
+        <div class="arch-box-name">PostgreSQL</div>
+        <div class="arch-box-desc">Boards, cards, users</div>
+        <div class="arch-badge ab-db">Persistent</div>
+      </div>
+      <div class="arch-box">
+        <div class="arch-box-icon">⚡</div>
+        <div class="arch-box-name">Redis</div>
+        <div class="arch-box-desc">Presence, sessions, pub/sub</div>
+        <div class="arch-badge ab-cache">Cache</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Code -->
+<div class="code-section">
+  <div class="code-inner">
+    <div>
+      <div class="section-label">Developer Experience</div>
+      <h2 class="section-title" style="font-size:1.8rem">Up and running in 4 commands.</h2>
+      <p class="section-sub" style="font-size:.95rem">Docker Compose handles Postgres and Redis. Turborepo runs everything in parallel with shared TypeScript types across the monorepo.</p>
+    </div>
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+        <span class="code-title">terminal</span>
+      </div>
+      <div class="code-body">
+        <div><span class="cm"># Install all workspace dependencies</span></div>
+        <div><span class="fn">npm</span> <span class="vr">install</span></div>
+        <div>&nbsp;</div>
+        <div><span class="cm"># Start Postgres + Redis via Docker</span></div>
+        <div><span class="fn">npm</span> <span class="vr">run docker:up</span></div>
+        <div>&nbsp;</div>
+        <div><span class="cm"># Run DB migrations</span></div>
+        <div><span class="fn">npm</span> <span class="vr">run db:migrate</span></div>
+        <div>&nbsp;</div>
+        <div><span class="cm"># Start frontend + backend (parallel)</span></div>
+        <div><span class="fn">npm</span> <span class="vr">run dev</span></div>
+        <div>&nbsp;</div>
+        <div><span class="cm"># ✓ Frontend → http://localhost:3000</span></div>
+        <div><span class="cm"># ✓ Backend  → http://localhost:4000</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-glow"></div>
+  <h2>Ready to collaborate<br/><span style="background:linear-gradient(135deg,#6366f1,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent">in real time?</span></h2>
+  <p>CollabBoard is open source and free to self-host. Star the repo and start building.</p>
+  <div class="cta-btns">
+    <a href="https://github.com/puneethkotha/CollabBoard" class="btn-primary" target="_blank">⭐ Star on GitHub</a>
+    <a href="https://github.com/puneethkotha/CollabBoard#getting-started" class="btn-secondary" target="_blank">Read the Docs</a>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div style="font-weight:700">⬡ CollabBoard</div>
+  <div class="footer-links">
+    <a href="https://github.com/puneethkotha/CollabBoard" target="_blank">GitHub</a>
+    <a href="https://github.com/puneethkotha/CollabBoard/blob/main/README.md" target="_blank">Docs</a>
+    <a href="https://puneethkotha.com" target="_blank">Built by Puneeth Kotha</a>
+  </div>
+  <div style="margin-top:.25rem">MIT License · 2026</div>
+</footer>
+
+<script>
+// Intersection observer for fade-up animations on scroll
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting) {
+      e.target.style.opacity = '1';
+      e.target.style.transform = 'translateY(0)';
+    }
+  });
+}, {threshold: 0.1});
+
+document.querySelectorAll('.feature-card, .stack-item, .arch-box, .stat').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity .5s ease, transform .5s ease';
+  obs.observe(el);
+});
+
+// Animate the kanban cards with a cursor effect
+let currentCard = null;
+document.querySelectorAll('.card').forEach(card => {
+  card.addEventListener('mouseenter', () => {
+    card.style.borderColor = 'rgba(99,102,241,0.5)';
+  });
+  card.addEventListener('mouseleave', () => {
+    if (!card.classList.contains('done')) card.style.borderColor = '';
+  });
+});
+</script>
+</body>
+</html>
